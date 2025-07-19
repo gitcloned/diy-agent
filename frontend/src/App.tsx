@@ -6,6 +6,8 @@ import './App.css';
 import FlowCanvas, { AgentNode, AgentNodeData, AgentConfiguration, WorkflowAgentConfiguration } from './components/FlowCanvas';
 import AgentPalette from './components/AgentPalette';
 import AgentConfigurationPanel from './components/AgentConfigurationPanel';
+import GlobalToolsManager from './components/GlobalToolsManager';
+import GlobalMCPManager from './components/GlobalMCPManager';
 
 // Initial empty state
 const initialNodes: AgentNode[] = [];
@@ -20,6 +22,13 @@ function App() {
   const [selectedNode, setSelectedNode] = useState<AgentNode | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'workflow' | 'tools' | 'mcps'>('workflow');
+
+  // Global Tools State
+  const [globalTools, setGlobalTools] = useState<any[]>([]);
+  
+  // Global MCP Servers State
+  const [globalMCPServers, setGlobalMCPServers] = useState<any[]>([]);
 
   const onNodesChange = useCallback((changes: any[]) => {
     setNodes((nds) => {
@@ -125,41 +134,181 @@ function App() {
     setSelectedNode(null);
   }, []);
 
+  // Global Tools Handlers
+  const handleToolCreate = useCallback((tool: any) => {
+    setGlobalTools(prev => [...prev, tool]);
+  }, []);
+
+  const handleToolUpdate = useCallback((id: string, tool: any) => {
+    setGlobalTools(prev => prev.map(t => t.id === id ? tool : t));
+  }, []);
+
+  const handleToolDelete = useCallback((id: string) => {
+    setGlobalTools(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const handleToolTest = useCallback(async (id: string) => {
+    // Mock implementation - would connect to backend
+    return new Promise<any>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: Math.random() > 0.3,
+          message: Math.random() > 0.3 ? 'Tool test successful' : 'Tool test failed',
+          output: { result: 'Mock test result' }
+        });
+      }, 1000);
+    });
+  }, []);
+
+  // Global MCP Handlers
+  const handleMCPCreate = useCallback((server: any) => {
+    setGlobalMCPServers(prev => [...prev, server]);
+  }, []);
+
+  const handleMCPUpdate = useCallback((id: string, server: any) => {
+    setGlobalMCPServers(prev => prev.map(s => s.id === id ? server : s));
+  }, []);
+
+  const handleMCPDelete = useCallback((id: string) => {
+    setGlobalMCPServers(prev => prev.filter(s => s.id !== id));
+  }, []);
+
+  const handleMCPTest = useCallback(async (id: string) => {
+    // Mock implementation - would connect to backend
+    return new Promise<any>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: Math.random() > 0.3,
+          message: Math.random() > 0.3 ? 'MCP server test successful' : 'MCP server test failed',
+          capabilities: [
+            { type: 'tools', version: '1.0', features: ['example_tool'] }
+          ]
+        });
+      }, 1500);
+    });
+  }, []);
+
+  const handleMCPConnect = useCallback(async (id: string) => {
+    // Mock implementation - would connect to backend
+    return new Promise<any>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: Math.random() > 0.2,
+          message: Math.random() > 0.2 ? 'Connected successfully' : 'Connection failed',
+          server_info: { version: '1.0', name: 'Mock MCP Server' }
+        });
+      }, 2000);
+    });
+  }, []);
+
   return (
     <div className="App">
       <div className="app-header">
         <h1>Visual Agent Flow Builder</h1>
+        
+        {/* GitHub-style Tab Navigation */}
+        <nav style={{
+          borderBottom: '1px solid #d1d9e0',
+          marginTop: '16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: '0'
+          }}>
+            {[
+              { key: 'workflow', label: 'Workflow', icon: '🔄' },
+              { key: 'tools', label: 'Tools', icon: '🔧' },
+              { key: 'mcps', label: 'MCP Servers', icon: '🔌' }
+            ].map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  border: 'none',
+                  background: 'transparent',
+                  color: activeTab === tab.key ? '#24292f' : '#656d76',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  borderBottom: activeTab === tab.key ? '2px solid #fd8c73' : '2px solid transparent',
+                  transition: 'color 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== tab.key) {
+                    e.currentTarget.style.color = '#24292f';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== tab.key) {
+                    e.currentTarget.style.color = '#656d76';
+                  }
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </nav>
       </div>
       
-      <div className="app-content">
-        <ReactFlowProvider>
-          <div className="flow-container">
-            <AgentPalette onDragStart={onDragStart} />
-            
-            <div 
-              className="canvas-container" 
-              ref={reactFlowWrapper}
-              onDrop={onDrop}
-              onDragOver={onDragOver}
-            >
-              <FlowCanvas
-                nodes={nodes}
-                edges={edges}
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onConnect={onConnect}
-                onNodeSelect={onNodeSelect}
-                onInit={setReactFlowInstance}
-              />
+      <div className="app-content" style={{ height: 'calc(100vh - 120px)' }}>
+        {activeTab === 'workflow' && (
+          <ReactFlowProvider>
+            <div className="flow-container" style={{ height: '100%' }}>
+              <AgentPalette onDragStart={onDragStart} />
+              
+              <div 
+                className="canvas-container" 
+                ref={reactFlowWrapper}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                style={{ flex: 1, height: '100%' }}
+              >
+                <FlowCanvas
+                  nodes={nodes}
+                  edges={edges}
+                  onNodesChange={onNodesChange}
+                  onEdgesChange={onEdgesChange}
+                  onConnect={onConnect}
+                  onNodeSelect={onNodeSelect}
+                  onInit={setReactFlowInstance}
+                />
+              </div>
             </div>
-          </div>
-        </ReactFlowProvider>
-        
-        {selectedNode && (
-          <AgentConfigurationPanel
-            selectedNode={selectedNode}
-            onConfigUpdate={onConfigUpdate}
-            onClose={onCloseConfigPanel}
+            
+            {selectedNode && (
+              <AgentConfigurationPanel
+                selectedNode={selectedNode}
+                onConfigUpdate={onConfigUpdate}
+                onClose={onCloseConfigPanel}
+              />
+            )}
+          </ReactFlowProvider>
+        )}
+
+        {activeTab === 'tools' && (
+          <GlobalToolsManager
+            tools={globalTools}
+            onToolCreate={handleToolCreate}
+            onToolUpdate={handleToolUpdate}
+            onToolDelete={handleToolDelete}
+            onToolTest={handleToolTest}
+          />
+        )}
+
+        {activeTab === 'mcps' && (
+          <GlobalMCPManager
+            mcpServers={globalMCPServers}
+            onServerCreate={handleMCPCreate}
+            onServerUpdate={handleMCPUpdate}
+            onServerDelete={handleMCPDelete}
+            onServerTest={handleMCPTest}
+            onServerConnect={handleMCPConnect}
           />
         )}
       </div>

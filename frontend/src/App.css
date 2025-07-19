@@ -6,10 +6,10 @@
 }
 
 .app-header {
-  background-color: #282c34;
+  background-color: #ffffff;
   padding: 16px 24px;
-  color: white;
-  border-bottom: 1px solid #dee2e6;
+  color: #24292f;
+  border-bottom: 1px solid #d1d9e0;
   flex-shrink: 0;
 }
 

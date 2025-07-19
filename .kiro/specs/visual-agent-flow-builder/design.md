@@ -269,7 +269,115 @@ interface PromptTemplate {
 - Update node configuration
 - Show parameter documentation
 
-#### 4. WorkflowManager Service
+#### 4. Global Tools Manager
+```typescript
+interface GlobalToolsManagerProps {
+  tools: ToolDefinition[];
+  onToolCreate: (tool: ToolDefinition) => void;
+  onToolUpdate: (id: string, tool: ToolDefinition) => void;
+  onToolDelete: (id: string) => void;
+  onToolTest: (id: string) => Promise<ToolTestResult>;
+}
+
+interface ToolDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  type: 'function' | 'code_execution' | 'search' | 'file_operation';
+  function_declaration: FunctionDeclaration;
+  implementation?: string; // For custom functions
+  enabled: boolean;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+interface FunctionDeclaration {
+  name: string;
+  description: string;
+  parameters: {
+    type: 'object';
+    properties: Record<string, ParameterSchema>;
+    required: string[];
+  };
+}
+
+interface ParameterSchema {
+  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+  description: string;
+  enum?: string[];
+  items?: ParameterSchema;
+  properties?: Record<string, ParameterSchema>;
+}
+```
+
+**Responsibilities:**
+- Manage global tool library with CRUD operations
+- Provide code editor for custom function implementations
+- Support tool testing and validation
+- Enable tool categorization and search
+- Handle tool import/export functionality
+
+#### 5. Global MCP Manager
+```typescript
+interface GlobalMCPManagerProps {
+  mcpServers: MCPServerDefinition[];
+  onServerCreate: (server: MCPServerDefinition) => void;
+  onServerUpdate: (id: string, server: MCPServerDefinition) => void;
+  onServerDelete: (id: string) => void;
+  onServerTest: (id: string) => Promise<MCPTestResult>;
+  onServerConnect: (id: string) => Promise<MCPConnectionResult>;
+}
+
+interface MCPServerDefinition {
+  id: string;
+  name: string;
+  description: string;
+  server_url: string;
+  protocol: 'http' | 'websocket' | 'stdio';
+  authentication: MCPAuthConfig;
+  capabilities: MCPCapability[];
+  connection_status: 'disconnected' | 'connecting' | 'connected' | 'error';
+  available_tools: MCPToolInfo[];
+  available_resources: MCPResourceInfo[];
+  enabled: boolean;
+  auto_connect: boolean;
+  timeout: number;
+  retry_policy: RetryPolicy;
+  created_at: string;
+  updated_at: string;
+}
+
+interface MCPCapability {
+  type: 'tools' | 'resources' | 'prompts' | 'sampling';
+  version: string;
+  features: string[];
+}
+
+interface MCPToolInfo {
+  name: string;
+  description: string;
+  input_schema: JSONSchema;
+  output_schema?: JSONSchema;
+}
+
+interface MCPResourceInfo {
+  uri: string;
+  name: string;
+  description: string;
+  mime_type: string;
+}
+```
+
+**Responsibilities:**
+- Manage MCP server connections and configurations
+- Handle server discovery and capability detection
+- Provide connection testing and monitoring
+- Support various authentication methods
+- Enable server browsing and tool/resource discovery
+
+#### 6. WorkflowManager Service
 ```typescript
 interface WorkflowDefinition {
   id: string;
