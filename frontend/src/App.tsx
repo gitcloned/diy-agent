@@ -3,8 +3,9 @@ import { ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 import './App.css';
 
-import FlowCanvas, { AgentNode, AgentNodeData } from './components/FlowCanvas';
+import FlowCanvas, { AgentNode, AgentNodeData, AgentConfiguration, WorkflowAgentConfiguration } from './components/FlowCanvas';
 import AgentPalette from './components/AgentPalette';
+import AgentConfigurationPanel from './components/AgentConfigurationPanel';
 
 // Initial empty state
 const initialNodes: AgentNode[] = [];
@@ -110,6 +111,20 @@ function App() {
     setSelectedNode(node);
   }, []);
 
+  const onConfigUpdate = useCallback((nodeId: string, config: AgentConfiguration | WorkflowAgentConfiguration) => {
+    setNodes((nds) => 
+      nds.map((node) => 
+        node.id === nodeId 
+          ? { ...node, data: { ...node.data, config } }
+          : node
+      )
+    );
+  }, []);
+
+  const onCloseConfigPanel = useCallback(() => {
+    setSelectedNode(null);
+  }, []);
+
   return (
     <div className="App">
       <div className="app-header">
@@ -141,42 +156,11 @@ function App() {
         </ReactFlowProvider>
         
         {selectedNode && (
-          <div className="node-info">
-            <h3>Selected Agent</h3>
-            <p><strong>ID:</strong> {selectedNode.data.id}</p>
-            <p><strong>Label:</strong> {selectedNode.data.label}</p>
-            <p><strong>Type:</strong> {selectedNode.data.agent_type === 'workflow_agent' ? 'Workflow Agent' : 'Agent'}</p>
-            <p><strong>Status:</strong> {selectedNode.data.status}</p>
-            <p><strong>Name:</strong> {selectedNode.data.config.name}</p>
-            {selectedNode.data.config.description && (
-              <p><strong>Description:</strong> {selectedNode.data.config.description}</p>
-            )}
-            <p><strong>Tools:</strong> {selectedNode.data.config.tools.length}</p>
-            <p><strong>MCPs:</strong> {selectedNode.data.config.mcps.length}</p>
-            {selectedNode.data.agent_type === 'workflow_agent' && (
-              <>
-                <p><strong>Sub-agents:</strong> {(selectedNode.data.config as any).sub_agents.length}</p>
-                <p><strong>Execution Type:</strong> {(selectedNode.data.config as any).execution_type}</p>
-              </>
-            )}
-            {selectedNode.data.config.model && (
-              <p><strong>Model:</strong> {selectedNode.data.config.model.model_name}</p>
-            )}
-            <div style={{ marginTop: '12px' }}>
-              <strong>Prompt:</strong>
-              <div style={{ 
-                fontSize: '12px', 
-                background: '#f8f9fa', 
-                padding: '8px', 
-                borderRadius: '4px', 
-                marginTop: '4px',
-                maxHeight: '100px',
-                overflowY: 'auto'
-              }}>
-                {selectedNode.data.config.prompt}
-              </div>
-            </div>
-          </div>
+          <AgentConfigurationPanel
+            selectedNode={selectedNode}
+            onConfigUpdate={onConfigUpdate}
+            onClose={onCloseConfigPanel}
+          />
         )}
       </div>
     </div>

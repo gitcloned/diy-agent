@@ -14,54 +14,22 @@ interface AgentPaletteProps {
 
 const agentTemplates: AgentTemplate[] = [
   {
-    label: 'Basic Agent',
-    description: 'A simple agent with customizable prompt',
+    label: 'Agent',
+    description: 'A basic agent that can be configured with tools, MCPs, and custom prompts',
     agent_type: 'agent',
     config: {
-      name: 'Basic Agent',
-      description: 'A basic agent for general tasks',
+      name: 'Agent',
+      description: 'A configurable agent for various tasks',
       prompt: 'You are a helpful assistant. Please help the user with their request.',
       tools: [],
       mcps: [],
-    }
-  },
-  {
-    label: 'Tool Agent',
-    description: 'Agent with pre-configured tools',
-    agent_type: 'agent',
-    config: {
-      name: 'Tool Agent',
-      description: 'An agent equipped with tools for specific tasks',
-      prompt: 'You are a helpful assistant with access to tools. Use them when needed to help the user.',
-      tools: [
-        {
-          name: 'example_tool',
-          description: 'An example tool',
-          type: 'function',
-          parameters: {},
-          enabled: true
-        }
-      ],
-      mcps: [],
-    }
-  },
-  {
-    label: 'MCP Agent',
-    description: 'Agent with MCP integration',
-    agent_type: 'agent',
-    config: {
-      name: 'MCP Agent',
-      description: 'An agent that can use MCP servers',
-      prompt: 'You are a helpful assistant with access to MCP servers. Use them to provide comprehensive assistance.',
-      tools: [],
-      mcps: [
-        {
-          name: 'example_mcp',
-          server_url: 'http://localhost:8000',
-          capabilities: ['tools', 'resources'],
-          auto_connect: true
-        }
-      ],
+      model: {
+        model_name: 'gemini-1.5-pro',
+        temperature: 0.7,
+        top_p: 0.95,
+        top_k: 40,
+        max_output_tokens: 8192
+      }
     }
   },
   {

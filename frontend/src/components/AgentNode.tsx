@@ -27,6 +27,8 @@ const AgentNode: React.FC<NodeProps<AgentNodeData>> = ({ data, selected }) => {
     return agentType === 'workflow_agent' ? '🔄' : '🤖';
   };
 
+  // Removed artificial agent type detection - just show "Agent" for regular agents
+
   const nodeColor = getNodeColor(data.agent_type, data.status);
   const statusIcon = getStatusIcon(data.status);
   const agentTypeIcon = getAgentTypeIcon(data.agent_type);
