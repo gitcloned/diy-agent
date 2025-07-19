@@ -1,21 +1,82 @@
 .App {
-  text-align: center;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
-.App-header {
+.app-header {
   background-color: #282c34;
-  padding: 20px;
+  padding: 16px 24px;
   color: white;
-  border-radius: 8px;
+  border-bottom: 1px solid #dee2e6;
+  flex-shrink: 0;
 }
 
-.App-header h1 {
-  margin: 0 0 16px 0;
-  font-size: 2rem;
-}
-
-.App-header p {
+.app-header h1 {
   margin: 0;
-  font-size: 1.2rem;
-  opacity: 0.8;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.app-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.flow-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas-container {
+  flex: 1;
+  height: 100%;
+  background-color: #fafafa;
+}
+
+.node-info {
+  width: 300px;
+  background: #f8f9fa;
+  border-left: 1px solid #dee2e6;
+  padding: 16px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.node-info h3 {
+  margin: 0 0 16px 0;
+  color: #495057;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.node-info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: #495057;
+}
+
+.node-info strong {
+  color: #212529;
+}
+
+/* React Flow specific overrides */
+.react-flow__controls {
+  bottom: 20px;
+  left: 20px;
+}
+
+.react-flow__minimap {
+  bottom: 20px;
+  right: 20px;
+}
+
+.react-flow__attribution {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 10px;
 }

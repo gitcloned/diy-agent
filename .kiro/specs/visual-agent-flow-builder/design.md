@@ -86,41 +86,53 @@ interface FlowCanvasProps {
 ```typescript
 interface AgentNodeData {
   id: string;
-  type: 'input' | 'processing' | 'output' | 'memory' | 'observation';
-  config: AgentConfiguration;
+  label: string;
+  agent_type: 'agent' | 'workflow_agent';
+  config: AgentConfiguration | WorkflowAgentConfiguration;
   status: 'idle' | 'running' | 'completed' | 'error' | 'streaming';
 }
 
+// Base Agent Configuration
 interface AgentConfiguration {
-  // Basic Agent Configuration
+  name: string;
+  description?: string;
+  prompt: string;
+  tools: ToolConfiguration[];
+  mcps: MCPConfiguration[];
+  model?: ModelConfiguration;
+  timeout?: number;
+}
+
+// WorkflowAgent extends Agent with sub-agents and execution type
+interface WorkflowAgentConfiguration extends AgentConfiguration {
+  sub_agents: AgentConfiguration[];
+  execution_type: 'sequential' | 'loop' | 'parallel';
+}
+
+interface MCPConfiguration {
+  name: string;
+  server_url: string;
+  authentication?: MCPAuthConfig;
+  capabilities: string[]; // e.g., ['tools', 'resources', 'prompts']
+  auto_connect: boolean;
+}
+
+interface MCPAuthConfig {
+  type: 'bearer' | 'api_key' | 'oauth';
+  credentials: Record<string, string>;
+}
+
+interface ToolConfiguration {
   name: string;
   description: string;
-  agentType: ADKAgentType;
-  
-  // ADK Model Configuration (for agent types that use models)
-  model?: ModelConfiguration;
-  system_instructions?: string;
-  
-  // Tool Configuration (for tool agents)
-  tool_definition?: ToolDefinition;
-  
-  // MCP (Model Context Protocol) Configuration
-  mcp_servers?: MCPServerConfiguration[];
-  mcp_tools?: MCPToolConfiguration[];
-  
-  // Memory Configuration (for memory agents)
-  memory_type?: 'vector' | 'key_value' | 'conversation';
-  
-  // Agent-specific Parameters
+  type: 'function' | 'mcp_tool';
+  // For function tools
+  function_declaration?: FunctionDeclaration;
+  // For MCP tools
+  mcp_server?: string;
+  mcp_tool_name?: string;
   parameters: Record<string, any>;
-  
-  // Input/Output Configuration for Visual Flow
-  inputPorts: Port[];
-  outputPorts: Port[];
-  
-  // Agent Execution Configuration
-  timeout?: number;
-  retry_policy?: RetryPolicy;
+  enabled: boolean;
 }
 
 interface MCPServerConfiguration {
@@ -131,31 +143,9 @@ interface MCPServerConfiguration {
   auto_connect: boolean;
 }
 
-interface MCPToolConfiguration {
-  server_name: string;
-  tool_name: string;
-  description: string;
-  parameters: Record<string, any>;
-  enabled: boolean;
-}
-
 interface MCPAuthConfig {
   type: 'bearer' | 'api_key' | 'oauth';
   credentials: Record<string, string>;
-}
-
-// ADK-specific types based on actual ADK documentation
-type ADKAgentType = 'conversational_agent' | 'function_calling_agent' | 'custom';
-
-interface ToolDefinition {
-  name: string;
-  description: string;
-  parameters: {
-    type: 'object';
-    properties: Record<string, any>;
-    required?: string[];
-  };
-  function: string; // Reference to actual function implementation
 }
 
 // Workflow-level configurations (not agent-level)
