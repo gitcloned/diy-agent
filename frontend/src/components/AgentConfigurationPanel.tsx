@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AgentConfiguration, WorkflowAgentConfiguration, ModelConfiguration, ToolConfiguration, MCPConfiguration } from './FlowCanvas';
+import PromptEditor from './PromptEditor';
 
 interface AgentConfigurationPanelProps {
   selectedNode: any | null;
@@ -16,6 +17,8 @@ const GEMINI_MODELS = [
 
 // Remove artificial agent type categories - there's just one base Agent type
 
+
+
 const AgentConfigurationPanel: React.FC<AgentConfigurationPanelProps> = ({
   selectedNode,
   onConfigUpdate,
@@ -23,7 +26,8 @@ const AgentConfigurationPanel: React.FC<AgentConfigurationPanelProps> = ({
 }) => {
   const [config, setConfig] = useState<AgentConfiguration | WorkflowAgentConfiguration | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [activeTab, setActiveTab] = useState<'basic' | 'model' | 'tools' | 'mcps' | 'subagents'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'prompt' | 'model' | 'tools' | 'mcps' | 'subagents'>('basic');
+
 
   useEffect(() => {
     if (selectedNode) {
@@ -186,7 +190,7 @@ const AgentConfigurationPanel: React.FC<AgentConfigurationPanelProps> = ({
         borderBottom: '1px solid #dee2e6',
         background: '#f8f9fa'
       }}>
-        {['basic', 'model', 'tools', 'mcps', ...(isWorkflowAgent ? ['subagents'] : [])].map((tab) => (
+        {['basic', 'prompt', 'model', 'tools', 'mcps', ...(isWorkflowAgent ? ['subagents'] : [])].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -254,30 +258,7 @@ const AgentConfigurationPanel: React.FC<AgentConfigurationPanelProps> = ({
               />
             </div>
 
-            {/* Agent Prompt */}
-            <div>
-              <label style={{ display: 'block', marginBottom: '4px', fontWeight: '500' }}>
-                System Prompt *
-              </label>
-              <textarea
-                value={config.prompt}
-                onChange={(e) => updateConfig({ prompt: e.target.value })}
-                rows={4}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: `1px solid ${errors.prompt ? '#dc3545' : '#ced4da'}`,
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  resize: 'vertical'
-                }}
-              />
-              {errors.prompt && (
-                <div style={{ color: '#dc3545', fontSize: '12px', marginTop: '4px' }}>
-                  {errors.prompt}
-                </div>
-              )}
-            </div>
+
 
             {/* Timeout */}
             <div>
@@ -298,6 +279,14 @@ const AgentConfigurationPanel: React.FC<AgentConfigurationPanelProps> = ({
               />
             </div>
           </div>
+        )}
+
+        {activeTab === 'prompt' && (
+          <PromptEditor
+            prompt={config.prompt}
+            onPromptChange={(prompt) => updateConfig({ prompt })}
+            error={errors.prompt}
+          />
         )}
 
         {activeTab === 'model' && (

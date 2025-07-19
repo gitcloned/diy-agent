@@ -240,10 +240,31 @@ interface ConfigurationPanelProps {
   onConfigUpdate: (nodeId: string, config: AgentConfiguration) => void;
   onClose: () => void;
 }
+
+interface PromptEditorProps {
+  prompt: string;
+  onPromptChange: (prompt: string) => void;
+  templates: PromptTemplate[];
+  showPreview: boolean;
+  onTogglePreview: () => void;
+}
+
+interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  prompt: string;
+  tags: string[];
+}
 ```
 
 **Responsibilities:**
-- Display agent configuration form
+- Display agent configuration form with tabbed interface
+- Provide dedicated markdown-enabled prompt editor with full-height editing area
+- Support prompt templates via modal selection interface
+- Enable split-view editing with markdown preview
+- Support collapsible sections for managing long prompts
 - Validate configuration inputs
 - Update node configuration
 - Show parameter documentation
