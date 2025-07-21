@@ -24,8 +24,14 @@ function App() {
   const [reactFlowInstance, setReactFlowInstance] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'workflow' | 'tools' | 'mcps'>('workflow');
 
-  // Global Tools State
-  const [globalTools, setGlobalTools] = useState<any[]>([]);
+  // Global Tools State - Google ADK Compliant
+  const [functionTools, setFunctionTools] = useState<any[]>([]);
+  const [builtInTools, setBuiltInTools] = useState<any[]>([
+    { tool_name: 'code_execution', enabled: false, config: {} },
+    { tool_name: 'google_search', enabled: false, config: {} },
+    { tool_name: 'google_search_retrieval', enabled: false, config: {} }
+  ]);
+  const [thirdPartyTools, setThirdPartyTools] = useState<any[]>([]);
   
   // Global MCP Servers State
   const [globalMCPServers, setGlobalMCPServers] = useState<any[]>([]);
@@ -134,29 +140,68 @@ function App() {
     setSelectedNode(null);
   }, []);
 
-  // Global Tools Handlers
-  const handleToolCreate = useCallback((tool: any) => {
-    setGlobalTools(prev => [...prev, tool]);
+  // Function Tools Handlers
+  const handleFunctionToolCreate = useCallback((tool: any) => {
+    setFunctionTools(prev => [...prev, tool]);
   }, []);
 
-  const handleToolUpdate = useCallback((id: string, tool: any) => {
-    setGlobalTools(prev => prev.map(t => t.id === id ? tool : t));
+  const handleFunctionToolUpdate = useCallback((id: string, tool: any) => {
+    setFunctionTools(prev => prev.map(t => t.id === id ? tool : t));
   }, []);
 
-  const handleToolDelete = useCallback((id: string) => {
-    setGlobalTools(prev => prev.filter(t => t.id !== id));
+  const handleFunctionToolDelete = useCallback((id: string) => {
+    setFunctionTools(prev => prev.filter(t => t.id !== id));
   }, []);
 
-  const handleToolTest = useCallback(async (id: string) => {
+  const handleFunctionToolTest = useCallback(async (id: string) => {
     // Mock implementation - would connect to backend
     return new Promise<any>((resolve) => {
       setTimeout(() => {
         resolve({
           success: Math.random() > 0.3,
-          message: Math.random() > 0.3 ? 'Tool test successful' : 'Tool test failed',
+          message: Math.random() > 0.3 ? 'Function tool test successful' : 'Function tool test failed',
           output: { result: 'Mock test result' }
         });
       }, 1000);
+    });
+  }, []);
+
+  // Built-in Tools Handlers
+  const handleBuiltInToolToggle = useCallback((toolName: string, enabled: boolean) => {
+    setBuiltInTools(prev => prev.map(t => 
+      t.tool_name === toolName ? { ...t, enabled } : t
+    ));
+  }, []);
+
+  const handleBuiltInToolConfigure = useCallback((toolName: string, config: Record<string, any>) => {
+    setBuiltInTools(prev => prev.map(t => 
+      t.tool_name === toolName ? { ...t, config } : t
+    ));
+  }, []);
+
+  // Third-party Tools Handlers
+  const handleThirdPartyToolCreate = useCallback((tool: any) => {
+    setThirdPartyTools(prev => [...prev, tool]);
+  }, []);
+
+  const handleThirdPartyToolUpdate = useCallback((id: string, tool: any) => {
+    setThirdPartyTools(prev => prev.map(t => t.id === id ? tool : t));
+  }, []);
+
+  const handleThirdPartyToolDelete = useCallback((id: string) => {
+    setThirdPartyTools(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const handleThirdPartyToolTest = useCallback(async (id: string) => {
+    // Mock implementation - would connect to backend
+    return new Promise<any>((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: Math.random() > 0.3,
+          message: Math.random() > 0.3 ? 'Third-party tool test successful' : 'Third-party tool test failed',
+          output: { result: 'Mock API response' }
+        });
+      }, 1500);
     });
   }, []);
 
@@ -293,11 +338,19 @@ function App() {
 
         {activeTab === 'tools' && (
           <GlobalToolsManager
-            tools={globalTools}
-            onToolCreate={handleToolCreate}
-            onToolUpdate={handleToolUpdate}
-            onToolDelete={handleToolDelete}
-            onToolTest={handleToolTest}
+            functionTools={functionTools}
+            builtInTools={builtInTools}
+            thirdPartyTools={thirdPartyTools}
+            onFunctionToolCreate={handleFunctionToolCreate}
+            onFunctionToolUpdate={handleFunctionToolUpdate}
+            onFunctionToolDelete={handleFunctionToolDelete}
+            onFunctionToolTest={handleFunctionToolTest}
+            onBuiltInToolToggle={handleBuiltInToolToggle}
+            onBuiltInToolConfigure={handleBuiltInToolConfigure}
+            onThirdPartyToolCreate={handleThirdPartyToolCreate}
+            onThirdPartyToolUpdate={handleThirdPartyToolUpdate}
+            onThirdPartyToolDelete={handleThirdPartyToolDelete}
+            onThirdPartyToolTest={handleThirdPartyToolTest}
           />
         )}
 

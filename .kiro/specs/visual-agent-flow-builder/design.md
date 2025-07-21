@@ -269,55 +269,139 @@ interface PromptTemplate {
 - Update node configuration
 - Show parameter documentation
 
-#### 4. Global Tools Manager
-```typescript
-interface GlobalToolsManagerProps {
-  tools: ToolDefinition[];
-  onToolCreate: (tool: ToolDefinition) => void;
-  onToolUpdate: (id: string, tool: ToolDefinition) => void;
-  onToolDelete: (id: string) => void;
-  onToolTest: (id: string) => Promise<ToolTestResult>;
-}
+#### 4. Global Tools Manager (Google ADK Compliant)
 
-interface ToolDefinition {
+**Architecture Overview:**
+The Global Tools Manager implements Google ADK's four distinct tool types with proper UI workflows for each type. Each tool type has specific creation, editing, testing, and management capabilities.
+
+```typescript
+// Function Tools - User-defined custom functions with code implementation
+interface FunctionToolDefinition {
   id: string;
   name: string;
   description: string;
-  category: string;
-  type: 'function' | 'code_execution' | 'search' | 'file_operation';
-  function_declaration: FunctionDeclaration;
-  implementation?: string; // For custom functions
+  function_declaration: GoogleFunctionDeclaration;
+  implementation: string; // Python/JavaScript code
+  language: 'python' | 'javascript';
   enabled: boolean;
   tags: string[];
   created_at: string;
   updated_at: string;
 }
 
-interface FunctionDeclaration {
+interface GoogleFunctionDeclaration {
   name: string;
   description: string;
-  parameters: {
-    type: 'object';
-    properties: Record<string, ParameterSchema>;
-    required: string[];
-  };
+  parameters: JSONSchema;
 }
 
-interface ParameterSchema {
-  type: 'string' | 'number' | 'boolean' | 'array' | 'object';
+// Built-in Tools - Google's pre-built tools (no code required)
+interface BuiltInToolConfig {
+  tool_name: 'code_execution' | 'google_search' | 'google_search_retrieval';
+  enabled: boolean;
+  config: Record<string, any>;
+  last_configured: string;
+}
+
+// Third-party Tools - External service integrations
+interface ThirdPartyToolDefinition {
+  id: string;
+  name: string;
   description: string;
-  enum?: string[];
-  items?: ParameterSchema;
-  properties?: Record<string, ParameterSchema>;
+  service_type: 'openapi' | 'rest_api' | 'webhook';
+  endpoint_url: string;
+  authentication: ThirdPartyAuthConfig;
+  headers?: Record<string, string>;
+  api_spec?: OpenAPISpec;
+  enabled: boolean;
+  connection_status: 'untested' | 'connected' | 'failed';
+  created_at: string;
+  updated_at: string;
+}
+
+interface ThirdPartyAuthConfig {
+  type: 'none' | 'api_key' | 'bearer' | 'oauth2';
+  credentials: Record<string, string>;
+}
+
+// Tool Management UI Components
+interface FunctionToolEditorProps {
+  tool: FunctionToolDefinition | null;
+  isOpen: boolean;
+  onSave: (tool: FunctionToolDefinition) => void;
+  onCancel: () => void;
+  templates: FunctionToolTemplate[];
+}
+
+interface ThirdPartyToolEditorProps {
+  tool: ThirdPartyToolDefinition | null;
+  isOpen: boolean;
+  onSave: (tool: ThirdPartyToolDefinition) => void;
+  onCancel: () => void;
+  onTest: (tool: ThirdPartyToolDefinition) => Promise<ConnectionTestResult>;
+}
+
+interface BuiltInToolConfiguratorProps {
+  tool: BuiltInToolConfig;
+  schema: BuiltInToolSchema;
+  isOpen: boolean;
+  onSave: (config: Record<string, any>) => void;
+  onCancel: () => void;
+}
+
+interface GlobalToolsManagerProps {
+  // Function Tools
+  functionTools: FunctionToolDefinition[];
+  onFunctionToolCreate: (tool: FunctionToolDefinition) => void;
+  onFunctionToolUpdate: (id: string, tool: FunctionToolDefinition) => void;
+  onFunctionToolDelete: (id: string) => void;
+  onFunctionToolTest: (id: string) => Promise<ToolTestResult>;
+  
+  // Built-in Tools
+  builtInTools: BuiltInToolConfig[];
+  onBuiltInToolToggle: (toolName: string, enabled: boolean) => void;
+  onBuiltInToolConfigure: (toolName: string, config: Record<string, any>) => void;
+  
+  // Third-party Tools
+  thirdPartyTools: ThirdPartyToolDefinition[];
+  onThirdPartyToolCreate: (tool: ThirdPartyToolDefinition) => void;
+  onThirdPartyToolUpdate: (id: string, tool: ThirdPartyToolDefinition) => void;
+  onThirdPartyToolDelete: (id: string) => void;
+  onThirdPartyToolTest: (id: string) => Promise<ToolTestResult>;
 }
 ```
 
+**UI Workflow Specifications:**
+
+**1. Function Tools Workflow:**
+- **Creation**: Template selection → Code editor → Function declaration editor → Test → Save
+- **Editing**: Full-screen code editor with syntax highlighting and validation
+- **Testing**: Execute function with sample inputs and display results
+- **Management**: Grid view with search, filter, enable/disable, delete
+
+**2. Built-in Tools Workflow:**
+- **Discovery**: Display available Google ADK built-in tools with descriptions
+- **Configuration**: Form-based configuration for each tool's specific parameters
+- **Enable/Disable**: Toggle functionality with immediate effect
+- **Validation**: Real-time validation of configuration parameters
+
+**3. Third-party Tools Workflow:**
+- **Creation**: Service type selection → Endpoint configuration → Authentication setup → Test connection → Save
+- **Testing**: Connection validation with authentication and endpoint verification
+- **Management**: Status monitoring, connection health, credential management
+
+**Layout Requirements:**
+- **Full-width interface**: Utilize entire available screen space
+- **Responsive design**: Adapt to different screen sizes
+- **Modal editors**: Full-screen or large modal editors for complex configurations
+- **Grid layouts**: Efficient use of space with card-based tool displays
+
 **Responsibilities:**
-- Manage global tool library with CRUD operations
-- Provide code editor for custom function implementations
-- Support tool testing and validation
-- Enable tool categorization and search
-- Handle tool import/export functionality
+- **Function Tools**: Code editor with syntax highlighting, function testing, template management
+- **Built-in Tools**: Configuration forms, parameter validation, enable/disable controls
+- **Third-party Tools**: API integration, authentication management, connection testing
+- **Global Management**: Search, filter, categorize, import/export tools
+- **Testing Environment**: Isolated testing for all tool types with detailed feedback
 
 #### 5. Global MCP Manager
 ```typescript
